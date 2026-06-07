@@ -182,6 +182,7 @@
             try {
                 const res = await fetch(staffAPI);
                 const staff = await res.json();
+                window.staffList = staff; // Store in global for actions lookup
 
                 const active = staff.filter(s => s.Is_Active).length;
                 document.getElementById('totalStaff').textContent = staff.length;
@@ -208,10 +209,10 @@
                         <td>${formatDate(s.Created_At)}</td>
                         <td>
                             <div class="btn-group">
-                                <button class="btn btn-sm ${s.Is_Active ? 'btn-delete' : 'btn-edit'}" onclick="toggleStatus(${s.Staff_ID}, ${s.Is_Active ? 0 : 1}, '${escapeHtml(s.Staff_Name)}', '${s.Email || ''}', '${s.Phone || ''}')">
+                                <button class="btn btn-sm ${s.Is_Active ? 'btn-delete' : 'btn-edit'}" onclick="toggleStatus(${s.Staff_ID})">
                                     ${s.Is_Active ? '🚫' : '✅'}
                                 </button>
-                                <button class="btn btn-sm btn-delete" onclick="deleteStaff(${s.Staff_ID}, '${escapeHtml(s.Staff_Name)}')" title="Delete">🗑️</button>
+                                <button class="btn btn-sm btn-delete" onclick="deleteStaff(${s.Staff_ID})" title="Delete">🗑️</button>
                             </div>
                         </td>
                     </tr>
@@ -267,12 +268,15 @@
             }
         });
 
-        async function toggleStatus(id, newStatus, name, email, phone) {
+        async function toggleStatus(id) {
+            const member = (window.staffList || []).find(s => s.Staff_ID === id);
+            if (!member) return;
+            const newStatus = member.Is_Active ? 0 : 1;
             try {
                 const res = await fetch(`${staffAPI}/${id}`, {
                     method: 'PUT',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ Staff_Name: name, Email: email, Phone: phone, Is_Active: newStatus })
+                    body: JSON.stringify({ Staff_Name: member.Staff_Name, Email: member.Email, Phone: member.Phone, Role: member.Role, Is_Active: newStatus })
                 });
                 if (res.ok) {
                     showToast(`Staff ${newStatus ? 'activated' : 'deactivated'}`, 'success');
@@ -283,8 +287,10 @@
             }
         }
 
-        async function deleteStaff(id, name) {
-            if (!confirmDelete(name)) return;
+        async function deleteStaff(id) {
+            const member = (window.staffList || []).find(s => s.Staff_ID === id);
+            if (!member) return;
+            if (!confirmDelete(member.Staff_Name)) return;
             try {
                 const res = await fetch(`${staffAPI}/${id}`, { method: 'DELETE' });
                 if (res.ok) {

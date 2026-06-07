@@ -7,6 +7,47 @@
     <title>Login | GymPro Management System</title>
     <link rel="stylesheet" href="css/styles.css">
     <link rel="stylesheet" href="css/login.css">
+    <style>
+        .portal-tabs {
+            display: flex;
+            background: var(--bg-input);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            padding: 4px;
+            margin-bottom: 24px;
+        }
+        .portal-tab {
+            flex: 1;
+            padding: 10px 12px;
+            border: none;
+            background: transparent;
+            color: var(--text-secondary);
+            font-family: inherit;
+            font-size: 0.85rem;
+            font-weight: 600;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all var(--transition);
+        }
+        .portal-tab.active {
+            background: var(--bg-card);
+            color: var(--accent);
+            box-shadow: var(--shadow-sm);
+        }
+        .input-group select {
+            width: 100%; padding: 12px 14px 12px 44px;
+            background: var(--bg-input); border: 1px solid var(--border);
+            border-radius: var(--radius-sm); color: var(--text-primary);
+            font-family: inherit; font-size: 0.9rem;
+            transition: all var(--transition); box-sizing: border-box;
+            cursor: pointer;
+            appearance: none; -webkit-appearance: none;
+        }
+        .input-group select:focus {
+            outline: none; border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.1);
+        }
+    </style>
 </head>
 <body>
 
@@ -20,6 +61,12 @@
                 <div class="brand-icon">🏋️</div>
                 <h1>GymPro</h1>
                 <p>Management System</p>
+            </div>
+
+            <!-- Portal Tabs -->
+            <div class="portal-tabs" id="portalTabs">
+                <button type="button" class="portal-tab active" id="tabStaff" onclick="selectPortal('staff')">👤 Staff/Admin</button>
+                <button type="button" class="portal-tab" id="tabTrainer" onclick="selectPortal('trainer')">🏅 Trainer</button>
             </div>
 
             <div class="form-title" id="formTitle">Staff Sign In</div>
@@ -53,6 +100,15 @@
                     <input type="text" id="phone" placeholder="Phone (optional)" autocomplete="tel">
                 </div>
 
+                <!-- Role Selection (Register only) -->
+                <div class="input-group register-only" id="roleGroup">
+                    <span class="input-icon">🛡️</span>
+                    <select id="roleSelect">
+                        <option value="staff">Staff Role</option>
+                        <option value="admin">Admin Role</option>
+                    </select>
+                </div>
+
                 <!-- Password -->
                 <div class="input-group">
                     <span class="input-icon">🔒</span>
@@ -73,7 +129,7 @@
                 </button>
             </form>
 
-            <div class="toggle-form">
+            <div class="toggle-form" id="toggleFormContainer">
                 <span id="toggleText">Don't have an account?</span>
                 <a id="toggleLink" onclick="toggleMode()">Create one</a>
             </div>
@@ -83,9 +139,22 @@
     <script>
         const API_BASE = window.location.origin + '/api';
         let isRegisterMode = false;
+        let currentPortal = 'staff';
 
-        if (localStorage.getItem('gym_user')) {
-            window.location.href = 'index.html';
+        // Redirect if already logged in based on role
+        const cachedUserStr = localStorage.getItem('gym_user');
+        if (cachedUserStr) {
+            try {
+                const cachedUser = JSON.parse(cachedUserStr);
+                const redirectPage = {
+                    'admin': 'index.html',
+                    'staff': 'staff-dashboard.html',
+                    'trainer': 'trainer-dashboard.html'
+                }[cachedUser.role] || 'index.html';
+                window.location.href = redirectPage;
+            } catch (e) {
+                localStorage.removeItem('gym_user');
+            }
         }
 
         const form = document.getElementById('authForm');
@@ -98,12 +167,15 @@
         const submitBtn = document.getElementById('submitBtn');
         const toggleText = document.getElementById('toggleText');
         const toggleLink = document.getElementById('toggleLink');
+        const toggleFormContainer = document.getElementById('toggleFormContainer');
         const emailGroup = document.getElementById('emailGroup');
         const phoneGroup = document.getElementById('phoneGroup');
+        const roleGroup = document.getElementById('roleGroup');
         const passwordInput = document.getElementById('password');
 
         // Live password validation
         passwordInput.addEventListener('input', () => {
+            if (currentPortal === 'trainer') return;
             const val = passwordInput.value;
             const reqLength = document.getElementById('reqLength');
             const reqSpecial = document.getElementById('reqSpecial');
@@ -126,7 +198,42 @@
             }
         });
 
+        function selectPortal(portal) {
+            currentPortal = portal;
+            hideMessages();
+            isRegisterMode = false;
+            
+            // Toggle active class on tabs
+            document.getElementById('tabStaff').classList.toggle('active', portal === 'staff');
+            document.getElementById('tabTrainer').classList.toggle('active', portal === 'trainer');
+
+            // Reset inputs
+            document.getElementById('staffName').value = '';
+            passwordInput.value = '';
+
+            if (portal === 'trainer') {
+                formTitle.textContent = 'Trainer Sign In';
+                btnText.textContent = 'Sign In';
+                passwordInput.placeholder = 'Access Key';
+                toggleFormContainer.style.display = 'none'; // Trainers cannot self-register
+                emailGroup.classList.remove('show');
+                phoneGroup.classList.remove('show');
+                roleGroup.classList.remove('show');
+                document.getElementById('passwordReqs').classList.remove('show');
+            } else {
+                formTitle.textContent = 'Staff Sign In';
+                btnText.textContent = 'Sign In';
+                passwordInput.placeholder = 'Password';
+                toggleFormContainer.style.display = 'block';
+                emailGroup.classList.remove('show');
+                phoneGroup.classList.remove('show');
+                roleGroup.classList.remove('show');
+                document.getElementById('passwordReqs').classList.remove('show');
+            }
+        }
+
         function toggleMode() {
+            if (currentPortal === 'trainer') return;
             isRegisterMode = !isRegisterMode;
             hideMessages();
 
@@ -137,6 +244,7 @@
                 toggleLink.textContent = 'Sign in';
                 emailGroup.classList.add('show');
                 phoneGroup.classList.add('show');
+                roleGroup.classList.add('show');
                 document.getElementById('passwordReqs').classList.add('show');
             } else {
                 formTitle.textContent = 'Staff Sign In';
@@ -145,6 +253,7 @@
                 toggleLink.textContent = 'Create one';
                 emailGroup.classList.remove('show');
                 phoneGroup.classList.remove('show');
+                roleGroup.classList.remove('show');
                 document.getElementById('passwordReqs').classList.remove('show');
             }
         }
@@ -176,15 +285,14 @@
             hideMessages();
 
             const name = document.getElementById('staffName').value.trim();
-            const password = document.getElementById('password').value;
+            const password = passwordInput.value;
 
             if (!name || !password) {
-                showError('Please enter your name and password');
+                showError(currentPortal === 'trainer' ? 'Please enter your name and access key' : 'Please enter your name and password');
                 return;
             }
 
-            if (isRegisterMode) {
-                // Client-side password validation
+            if (isRegisterMode && currentPortal === 'staff') {
                 if (password.length < 6) {
                     showError('Password must be at least 6 characters long');
                     return;
@@ -200,11 +308,19 @@
 
             try {
                 const endpoint = isRegisterMode ? '/auth/register' : '/auth/login';
-                const email = document.getElementById('email').value.trim();
-                const phone = document.getElementById('phone').value.trim();
-                const body = isRegisterMode
-                    ? { name, password, email: email || undefined, phone: phone || undefined }
-                    : { name, password };
+                let body;
+                if (currentPortal === 'trainer') {
+                    body = { name, password, role: 'trainer' };
+                } else {
+                    if (isRegisterMode) {
+                        const email = document.getElementById('email').value.trim();
+                        const phone = document.getElementById('phone').value.trim();
+                        const role = document.getElementById('roleSelect').value;
+                        body = { name, password, email: email || undefined, phone: phone || undefined, role };
+                    } else {
+                        body = { name, password, role: 'staff' };
+                    }
+                }
 
                 const res = await fetch(`${API_BASE}${endpoint}`, {
                     method: 'POST',
@@ -220,16 +336,18 @@
                     return;
                 }
 
-                if (isRegisterMode) {
-                    showSuccess('Account created! Signing you in...');
-                    setTimeout(() => {
-                        localStorage.setItem('gym_user', JSON.stringify(data.user));
-                        window.location.href = 'index.html';
-                    }, 1000);
-                } else {
+                showSuccess(isRegisterMode ? 'Account created! Signing you in...' : 'Sign in successful! Redirecting...');
+                setTimeout(() => {
                     localStorage.setItem('gym_user', JSON.stringify(data.user));
-                    window.location.href = 'index.html';
-                }
+                    
+                    const redirectPage = {
+                        'admin': 'index.html',
+                        'staff': 'staff-dashboard.html',
+                        'trainer': 'trainer-dashboard.html'
+                    }[data.user.role] || 'index.html';
+                    
+                    window.location.href = redirectPage;
+                }, 1000);
             } catch (err) {
                 showError('Cannot connect to server. Ensure backend is running.');
                 setLoading(false);

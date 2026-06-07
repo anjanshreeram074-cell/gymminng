@@ -110,7 +110,7 @@
                 } else {
                     const result = await apiPost('/trainers', data);
                     if (result.access_key) {
-                        alert(`Trainer added!\\n\\nAccess Key: ${result.access_key}\\n\\nShare this key with the trainer for login.`);
+                        alert(`Trainer added!\n\nAccess Key: ${result.access_key}\n\nShare this key with the trainer for login.`);
                     }
                     showToast('Trainer added successfully!');
                     setTimeout(() => window.location.href = 'view-trainers.html', 1000);

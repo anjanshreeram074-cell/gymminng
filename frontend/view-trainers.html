@@ -55,11 +55,12 @@
                             <th>Specialization</th>
                             <th>Phone</th>
                             <th>Experience</th>
+                            <th>Access Key</th>
                             <th>Actions</th>
                         </tr>
                     </thead>
                     <tbody id="trainersBody">
-                        <tr><td colspan="6" class="empty-state"><p>Loading...</p></td></tr>
+                        <tr><td colspan="7" class="empty-state"><p>Loading...</p></td></tr>
                     </tbody>
                 </table>
             </div>
@@ -73,7 +74,7 @@
             try {
                 const trainers = await apiGet('/trainers');
                 if (trainers.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="6" class="empty-state"><div class="icon">🏅</div><p>No trainers found. <a href="add-trainer.html">Add your first trainer</a></p></td></tr>';
+                    tbody.innerHTML = '<tr><td colspan="7" class="empty-state"><div class="icon">🏅</div><p>No trainers found. <a href="add-trainer.html">Add your first trainer</a></p></td></tr>';
                     return;
                 }
                 tbody.innerHTML = trainers.map(t => `
@@ -84,6 +85,12 @@
                         <td>${t.Phone || '—'}</td>
                         <td>${t.Experience} year${t.Experience !== 1 ? 's' : ''}</td>
                         <td>
+                            <div style="display:flex;align-items:center;gap:8px;">
+                                <code style="font-family:monospace;background:var(--bg-input);padding:4px 8px;border-radius:4px;font-size:0.85rem;border:1px solid var(--border);color:var(--accent);">${t.Access_Key || '—'}</code>
+                                <button onclick="regenerateKey(${t.Trainer_ID})" class="btn btn-sm btn-edit" style="padding:4px 8px;font-size:0.7rem;" title="Regenerate Key">🔄</button>
+                            </div>
+                        </td>
+                        <td>
                             <div class="btn-group">
                                 <a href="add-trainer.html?id=${t.Trainer_ID}" class="btn btn-edit btn-sm">Edit</a>
                                 <button onclick="deleteTrainer(${t.Trainer_ID}, '${t.Trainer_Name}')" class="btn btn-delete btn-sm">Delete</button>
@@ -92,7 +99,19 @@
                     </tr>
                 `).join('');
             } catch (err) {
-                tbody.innerHTML = '<tr><td colspan="6" class="empty-state"><p>Could not load trainers. Is the server running?</p></td></tr>';
+                tbody.innerHTML = '<tr><td colspan="7" class="empty-state"><p>Could not load trainers. Is the server running?</p></td></tr>';
+            }
+        }
+
+        async function regenerateKey(id) {
+            if (!confirm('Are you sure you want to regenerate the access key for this trainer?')) return;
+            try {
+                const res = await apiPut(`/trainers/${id}/regenerate-key`, {});
+                alert(`New Access Key generated!\n\nAccess Key: ${res.access_key}`);
+                showToast('Access key regenerated successfully');
+                loadTrainers();
+            } catch (err) {
+                showToast('Failed to regenerate access key', 'error');
             }
         }
 

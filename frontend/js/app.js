@@ -8,9 +8,37 @@ function checkAuth() {
     // Skip auth for login page
     if (currentPage === 'login.html') return;
 
-    const user = localStorage.getItem('gym_user');
-    if (!user) {
+    const userStr = localStorage.getItem('gym_user');
+    if (!userStr) {
         window.location.href = 'login.html';
+        return;
+    }
+
+    let user;
+    try {
+        user = JSON.parse(userStr);
+    } catch (e) {
+        localStorage.removeItem('gym_user');
+        window.location.href = 'login.html';
+        return;
+    }
+
+    const role = user.role || 'staff';
+    const adminPages = ['index.html', 'manage-staff.html', 'expenditure.html', 'admin-reports.html'];
+    const trainerPages = ['trainer-dashboard.html'];
+
+    if (role === 'trainer') {
+        if (!trainerPages.includes(currentPage)) {
+            window.location.href = 'trainer-dashboard.html';
+        }
+    } else if (role === 'staff') {
+        if (adminPages.includes(currentPage)) {
+            window.location.href = 'staff-dashboard.html';
+        }
+    } else if (role === 'admin') {
+        if (currentPage === 'trainer-dashboard.html') {
+            window.location.href = 'index.html';
+        }
     }
 }
 

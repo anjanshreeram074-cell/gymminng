@@ -13,7 +13,7 @@ const pool = mysql.createPool({
     queueLimit: 0,
     // Enable SSL for cloud databases (required by Aiven, PlanetScale, Railway, etc.)
     ssl: process.env.DB_HOST && process.env.DB_HOST !== 'localhost'
-        ? { rejectUnauthorized: true }
+        ? { rejectUnauthorized: false }
         : undefined
 });
 

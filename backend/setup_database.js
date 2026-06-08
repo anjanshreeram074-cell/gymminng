@@ -17,19 +17,30 @@ async function setup() {
     const password = process.env.DB_PASSWORD || '';
     const dbName = process.env.DB_NAME || 'gym_management';
 
+    // Enable SSL for cloud databases (Railway, Aiven, etc.)
+    const sslConfig = host && host !== 'localhost'
+        ? { rejectUnauthorized: false }
+        : undefined;
+
     console.log('\n🏋️  Gym Management System — Database Setup');
     console.log('─'.repeat(50));
     console.log(`   Host:     ${host}:${port}`);
     console.log(`   User:     ${user}`);
     console.log(`   Database: ${dbName}`);
+    console.log(`   SSL:      ${sslConfig ? 'enabled' : 'disabled'}`);
     console.log('─'.repeat(50));
 
-    // Step 1: Connect WITHOUT a database to create it
+    // Step 1: Connect WITHOUT a database to create it (skip for cloud providers that pre-create DB)
     let conn;
     try {
-        conn = await mysql.createConnection({ host, port, user, password });
-        await conn.query(`CREATE DATABASE IF NOT EXISTS \`${dbName}\``);
-        console.log(`\n✅ Database "${dbName}" is ready.`);
+        conn = await mysql.createConnection({ host, port, user, password, ssl: sslConfig });
+        try {
+            await conn.query(`CREATE DATABASE IF NOT EXISTS \`${dbName}\``);
+            console.log(`\n✅ Database "${dbName}" is ready.`);
+        } catch (createErr) {
+            // Cloud providers like Railway may not allow CREATE DATABASE — that's OK
+            console.log(`\nℹ️  Using pre-existing database "${dbName}".`);
+        }
         await conn.end();
     } catch (err) {
         console.error('\n❌ Cannot connect to MySQL. Make sure MySQL is running.');
@@ -42,7 +53,8 @@ async function setup() {
         host, port, user, password,
         database: dbName,
         waitForConnections: true,
-        connectionLimit: 5
+        connectionLimit: 5,
+        ssl: sslConfig
     });
 
     try {

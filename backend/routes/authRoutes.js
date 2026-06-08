@@ -73,45 +73,13 @@ router.post('/register', async (req, res) => {
     }
 });
 
-// POST /api/auth/login — Staff or Trainer login with name + password
+// POST /api/auth/login — Staff login with name + password
 router.post('/login', async (req, res) => {
     try {
-        const { name, password, role } = req.body;
+        const { name, password } = req.body;
 
         if (!name || !password) {
             return res.status(400).json({ error: 'Name and password are required' });
-        }
-
-        if (role === 'trainer') {
-            // Find trainer by name (case-insensitive)
-            const [rows] = await pool.query(
-                'SELECT * FROM TRAINER WHERE LOWER(Trainer_Name) = LOWER(?) AND Is_Active = 1',
-                [name.trim()]
-            );
-
-            if (rows.length === 0) {
-                return res.status(401).json({ error: 'Invalid trainer name or access key' });
-            }
-
-            const trainer = rows[0];
-
-            if (!trainer.Access_Key) {
-                return res.status(401).json({ error: 'No access key set for this trainer account. Please contact admin.' });
-            }
-
-            if (trainer.Access_Key.trim().toUpperCase() !== password.trim().toUpperCase()) {
-                return res.status(401).json({ error: 'Invalid trainer name or access key' });
-            }
-
-            return res.json({
-                message: 'Trainer login successful',
-                user: {
-                    id: trainer.Trainer_ID,
-                    name: trainer.Trainer_Name,
-                    specialization: trainer.Specialization,
-                    role: 'trainer'
-                }
-            });
         }
 
         // Find staff member by name (case-insensitive)

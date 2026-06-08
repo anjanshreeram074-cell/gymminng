@@ -8,32 +8,6 @@
     <link rel="stylesheet" href="css/styles.css">
     <link rel="stylesheet" href="css/login.css">
     <style>
-        .portal-tabs {
-            display: flex;
-            background: var(--bg-input);
-            border: 1px solid var(--border);
-            border-radius: var(--radius-sm);
-            padding: 4px;
-            margin-bottom: 24px;
-        }
-        .portal-tab {
-            flex: 1;
-            padding: 10px 12px;
-            border: none;
-            background: transparent;
-            color: var(--text-secondary);
-            font-family: inherit;
-            font-size: 0.85rem;
-            font-weight: 600;
-            border-radius: 6px;
-            cursor: pointer;
-            transition: all var(--transition);
-        }
-        .portal-tab.active {
-            background: var(--bg-card);
-            color: var(--accent);
-            box-shadow: var(--shadow-sm);
-        }
         .input-group select {
             width: 100%; padding: 12px 14px 12px 44px;
             background: var(--bg-input); border: 1px solid var(--border);
@@ -61,12 +35,6 @@
                 <div class="brand-icon">🏋️</div>
                 <h1>GymPro</h1>
                 <p>Management System</p>
-            </div>
-
-            <!-- Portal Tabs -->
-            <div class="portal-tabs" id="portalTabs">
-                <button type="button" class="portal-tab active" id="tabStaff" onclick="selectPortal('staff')">👤 Staff/Admin</button>
-                <button type="button" class="portal-tab" id="tabTrainer" onclick="selectPortal('trainer')">🏅 Trainer</button>
             </div>
 
             <div class="form-title" id="formTitle">Staff Sign In</div>
@@ -139,7 +107,6 @@
     <script>
         const API_BASE = window.location.origin + '/api';
         let isRegisterMode = false;
-        let currentPortal = 'staff';
 
         // Redirect if already logged in based on role
         const cachedUserStr = localStorage.getItem('gym_user');
@@ -175,7 +142,6 @@
 
         // Live password validation
         passwordInput.addEventListener('input', () => {
-            if (currentPortal === 'trainer') return;
             const val = passwordInput.value;
             const reqLength = document.getElementById('reqLength');
             const reqSpecial = document.getElementById('reqSpecial');
@@ -198,42 +164,7 @@
             }
         });
 
-        function selectPortal(portal) {
-            currentPortal = portal;
-            hideMessages();
-            isRegisterMode = false;
-            
-            // Toggle active class on tabs
-            document.getElementById('tabStaff').classList.toggle('active', portal === 'staff');
-            document.getElementById('tabTrainer').classList.toggle('active', portal === 'trainer');
-
-            // Reset inputs
-            document.getElementById('staffName').value = '';
-            passwordInput.value = '';
-
-            if (portal === 'trainer') {
-                formTitle.textContent = 'Trainer Sign In';
-                btnText.textContent = 'Sign In';
-                passwordInput.placeholder = 'Access Key';
-                toggleFormContainer.style.display = 'none'; // Trainers cannot self-register
-                emailGroup.classList.remove('show');
-                phoneGroup.classList.remove('show');
-                roleGroup.classList.remove('show');
-                document.getElementById('passwordReqs').classList.remove('show');
-            } else {
-                formTitle.textContent = 'Staff Sign In';
-                btnText.textContent = 'Sign In';
-                passwordInput.placeholder = 'Password';
-                toggleFormContainer.style.display = 'block';
-                emailGroup.classList.remove('show');
-                phoneGroup.classList.remove('show');
-                roleGroup.classList.remove('show');
-                document.getElementById('passwordReqs').classList.remove('show');
-            }
-        }
-
         function toggleMode() {
-            if (currentPortal === 'trainer') return;
             isRegisterMode = !isRegisterMode;
             hideMessages();
 
@@ -288,11 +219,11 @@
             const password = passwordInput.value;
 
             if (!name || !password) {
-                showError(currentPortal === 'trainer' ? 'Please enter your name and access key' : 'Please enter your name and password');
+                showError('Please enter your name and password');
                 return;
             }
 
-            if (isRegisterMode && currentPortal === 'staff') {
+            if (isRegisterMode) {
                 if (password.length < 6) {
                     showError('Password must be at least 6 characters long');
                     return;
@@ -309,17 +240,13 @@
             try {
                 const endpoint = isRegisterMode ? '/auth/register' : '/auth/login';
                 let body;
-                if (currentPortal === 'trainer') {
-                    body = { name, password, role: 'trainer' };
+                if (isRegisterMode) {
+                    const email = document.getElementById('email').value.trim();
+                    const phone = document.getElementById('phone').value.trim();
+                    const role = document.getElementById('roleSelect').value;
+                    body = { name, password, email: email || undefined, phone: phone || undefined, role };
                 } else {
-                    if (isRegisterMode) {
-                        const email = document.getElementById('email').value.trim();
-                        const phone = document.getElementById('phone').value.trim();
-                        const role = document.getElementById('roleSelect').value;
-                        body = { name, password, email: email || undefined, phone: phone || undefined, role };
-                    } else {
-                        body = { name, password, role: 'staff' };
-                    }
+                    body = { name, password, role: 'staff' };
                 }
 
                 const res = await fetch(`${API_BASE}${endpoint}`, {

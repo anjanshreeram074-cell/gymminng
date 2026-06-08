@@ -2,7 +2,8 @@ const express = require('express');
 const cors = require('cors');
 const path = require('path');
 
-// Load env from backend folder
+// Load env — try root .env first, then backend/.env, silently skip if neither exists
+require('dotenv').config({ path: path.join(__dirname, '..', '.env') });
 require('dotenv').config({ path: path.join(__dirname, '..', 'backend', '.env') });
 
 // Import routes from backend

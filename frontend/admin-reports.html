@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,20 +9,29 @@
     <link rel="stylesheet" href="css/styles.css">
     <style>
         .filter-bar {
-            display: flex; gap: 8px; flex-wrap: wrap;
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
             margin-bottom: 20px;
         }
+
         .filter-btn {
             padding: 8px 16px;
             border: 1px solid var(--border);
             border-radius: 20px;
             background: var(--bg-input);
             color: var(--text-secondary);
-            font-size: 0.8rem; font-weight: 600;
-            cursor: pointer; transition: all 0.2s;
+            font-size: 0.8rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
             font-family: inherit;
         }
-        .filter-btn:hover { border-color: var(--accent); }
+
+        .filter-btn:hover {
+            border-color: var(--accent);
+        }
+
         .filter-btn.active {
             background: rgba(249, 115, 22, 0.12);
             color: var(--accent);
@@ -37,78 +47,168 @@
             transition: all 0.2s ease;
             border-left: 4px solid transparent;
         }
-        .report-card:hover { border-color: rgba(249, 115, 22, 0.3); }
-        .report-card.priority-critical { border-left-color: #ef4444; }
-        .report-card.priority-high { border-left-color: #f97316; }
-        .report-card.priority-medium { border-left-color: #eab308; }
-        .report-card.priority-low { border-left-color: #22c55e; }
+
+        .report-card:hover {
+            border-color: rgba(249, 115, 22, 0.3);
+        }
+
+        .report-card.priority-critical {
+            border-left-color: #ef4444;
+        }
+
+        .report-card.priority-high {
+            border-left-color: #f97316;
+        }
+
+        .report-card.priority-medium {
+            border-left-color: #eab308;
+        }
+
+        .report-card.priority-low {
+            border-left-color: #22c55e;
+        }
 
         .report-card-header {
-            display: flex; align-items: flex-start;
-            justify-content: space-between; margin-bottom: 10px;
-        }
-        .report-card-title { font-weight: 600; font-size: 1rem; flex: 1; }
-        .report-card-badges { display: flex; gap: 6px; flex-shrink: 0; margin-left: 12px; }
-
-        .report-card-meta {
-            display: flex; align-items: center; gap: 16px;
-            font-size: 0.78rem; color: var(--text-secondary);
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
             margin-bottom: 10px;
         }
-        .report-card-body {
-            font-size: 0.85rem; color: var(--text-secondary);
-            line-height: 1.6; margin-bottom: 12px;
+
+        .report-card-title {
+            font-weight: 600;
+            font-size: 1rem;
+            flex: 1;
         }
+
+        .report-card-badges {
+            display: flex;
+            gap: 6px;
+            flex-shrink: 0;
+            margin-left: 12px;
+        }
+
+        .report-card-meta {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            font-size: 0.78rem;
+            color: var(--text-secondary);
+            margin-bottom: 10px;
+        }
+
+        .report-card-body {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            line-height: 1.6;
+            margin-bottom: 12px;
+        }
+
         .report-card-actions {
-            display: flex; gap: 8px; align-items: center;
+            display: flex;
+            gap: 8px;
+            align-items: center;
             flex-wrap: wrap;
         }
 
         .status-badge {
-            display: inline-flex; align-items: center; gap: 4px;
-            padding: 3px 10px; border-radius: 20px;
-            font-size: 0.7rem; font-weight: 600;
-            text-transform: uppercase; letter-spacing: 0.5px;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
-        .status-open { background: rgba(234, 179, 8, 0.12); color: #facc15; }
-        .status-in_progress { background: rgba(59, 130, 246, 0.12); color: #60a5fa; }
-        .status-resolved { background: rgba(34, 197, 94, 0.12); color: #4ade80; }
-        .status-closed { background: rgba(139, 143, 163, 0.12); color: var(--text-secondary); }
+
+        .status-open {
+            background: rgba(234, 179, 8, 0.12);
+            color: #facc15;
+        }
+
+        .status-in_progress {
+            background: rgba(59, 130, 246, 0.12);
+            color: #60a5fa;
+        }
+
+        .status-resolved {
+            background: rgba(34, 197, 94, 0.12);
+            color: #4ade80;
+        }
+
+        .status-closed {
+            background: rgba(139, 143, 163, 0.12);
+            color: var(--text-secondary);
+        }
 
         .priority-badge {
-            display: inline-flex; padding: 2px 8px; border-radius: 10px;
-            font-size: 0.68rem; font-weight: 600; text-transform: uppercase;
+            display: inline-flex;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 0.68rem;
+            font-weight: 600;
+            text-transform: uppercase;
         }
-        .priority-low { background: rgba(34, 197, 94, 0.12); color: #4ade80; }
-        .priority-medium { background: rgba(234, 179, 8, 0.12); color: #facc15; }
-        .priority-high { background: rgba(249, 115, 22, 0.12); color: #fb923c; }
-        .priority-critical { background: rgba(239, 68, 68, 0.12); color: #f87171; }
+
+        .priority-low {
+            background: rgba(34, 197, 94, 0.12);
+            color: #4ade80;
+        }
+
+        .priority-medium {
+            background: rgba(234, 179, 8, 0.12);
+            color: #facc15;
+        }
+
+        .priority-high {
+            background: rgba(249, 115, 22, 0.12);
+            color: #fb923c;
+        }
+
+        .priority-critical {
+            background: rgba(239, 68, 68, 0.12);
+            color: #f87171;
+        }
 
         .type-badge {
-            display: inline-flex; padding: 3px 10px; border-radius: 10px;
-            font-size: 0.72rem; font-weight: 600;
-            background: rgba(139, 143, 163, 0.12); color: var(--text-secondary);
+            display: inline-flex;
+            padding: 3px 10px;
+            border-radius: 10px;
+            font-size: 0.72rem;
+            font-weight: 600;
+            background: rgba(139, 143, 163, 0.12);
+            color: var(--text-secondary);
         }
 
         .response-form {
-            margin-top: 12px; padding: 16px;
+            margin-top: 12px;
+            padding: 16px;
             background: rgba(59, 130, 246, 0.04);
             border: 1px solid rgba(59, 130, 246, 0.1);
             border-radius: var(--radius-sm);
         }
+
         .response-form textarea {
-            width: 100%; padding: 10px 14px;
+            width: 100%;
+            padding: 10px 14px;
             background: var(--bg-input);
             border: 1px solid var(--border);
             border-radius: var(--radius-sm);
             color: var(--text-primary);
-            font-family: inherit; font-size: 0.85rem;
-            resize: vertical; box-sizing: border-box;
+            font-family: inherit;
+            font-size: 0.85rem;
+            resize: vertical;
+            box-sizing: border-box;
             margin-bottom: 10px;
         }
+
         .response-form textarea:focus {
-            outline: none; border-color: var(--accent);
+            outline: none;
+            border-color: var(--accent);
         }
+
         .response-existing {
             margin-top: 10px;
             padding: 12px 16px;
@@ -118,7 +218,10 @@
             font-size: 0.82rem;
             color: var(--text-secondary);
         }
-        .response-existing strong { color: #60a5fa; }
+
+        .response-existing strong {
+            color: #60a5fa;
+        }
 
         /* Status dropdown */
         .status-select {
@@ -127,12 +230,17 @@
             border: 1px solid var(--border);
             border-radius: 6px;
             color: var(--text-primary);
-            font-family: inherit; font-size: 0.8rem;
+            font-family: inherit;
+            font-size: 0.8rem;
             cursor: pointer;
         }
-        .status-select option { background: var(--bg-secondary); }
+
+        .status-select option {
+            background: var(--bg-secondary);
+        }
     </style>
 </head>
+
 <body>
 
     <!-- Sidebar -->
@@ -204,14 +312,18 @@
         <div class="filter-bar">
             <button class="filter-btn active" data-filter="all" onclick="filterReports('all', this)">All</button>
             <button class="filter-btn" data-filter="open" onclick="filterReports('open', this)">⏳ Open</button>
-            <button class="filter-btn" data-filter="in_progress" onclick="filterReports('in_progress', this)">🔄 In Progress</button>
-            <button class="filter-btn" data-filter="resolved" onclick="filterReports('resolved', this)">✅ Resolved</button>
+            <button class="filter-btn" data-filter="in_progress" onclick="filterReports('in_progress', this)">🔄 In
+                Progress</button>
+            <button class="filter-btn" data-filter="resolved" onclick="filterReports('resolved', this)">✅
+                Resolved</button>
             <button class="filter-btn" data-filter="closed" onclick="filterReports('closed', this)">🔒 Closed</button>
         </div>
 
         <!-- Reports List -->
         <div id="reportsList">
-            <div class="empty-state"><p>Loading reports...</p></div>
+            <div class="empty-state">
+                <p>Loading reports...</p>
+            </div>
         </div>
     </main>
 
@@ -254,8 +366,8 @@
         }
 
         function renderReports() {
-            const filtered = currentFilter === 'all' 
-                ? allReports 
+            const filtered = currentFilter === 'all'
+                ? allReports
                 : allReports.filter(r => r.Status === currentFilter);
 
             const container = document.getElementById('reportsList');
@@ -394,4 +506,5 @@
         loadReports();
     </script>
 </body>
+
 </html>

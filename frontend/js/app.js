@@ -25,14 +25,9 @@ function checkAuth() {
 
     const role = user.role || 'staff';
     const adminPages = ['index.html', 'manage-staff.html', 'expenditure.html', 'admin-reports.html'];
-    const trainerPages = ['trainer-dashboard.html'];
 
-    if (role === 'trainer') {
-        if (!trainerPages.includes(currentPage)) {
-            window.location.href = 'trainer-dashboard.html';
-        }
-    } else if (role === 'staff') {
-        if (adminPages.includes(currentPage)) {
+    if (role === 'staff') {
+        if (adminPages.includes(currentPage) || currentPage === 'trainer-dashboard.html') {
             window.location.href = 'staff-dashboard.html';
         }
     } else if (role === 'admin') {
